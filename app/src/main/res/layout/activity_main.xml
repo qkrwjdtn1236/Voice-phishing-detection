@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="음성 결과"
+        android:textSize="20dp"
+        android:id="@+id/RecordResult"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="horizontal"></LinearLayout>
+
+    <ImageButton
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:text="STT"
+        android:src="@drawable/ic_baseline_call_24"
+        android:id="@+id/SSTStart"/>
+
+</LinearLayout>
