@@ -10,37 +10,58 @@ import android.os.Vibrator;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.speech.tts.TextToSpeech;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class MainActivity extends Activity {
     String[] fishingTxt = {"대포통장", "명의도용", "사건연루", "개인정보유출", "안전계좌", "계좌동결", "녹취", "금융범죄", "저금리대출", "신용등급", "수수료", "공증료", "공탁금", "거래실적", "자산관리공사", "개인정보유출", "보안등급", "보안인증절차"};
     ImageButton button;
     TextView textView;
     Intent intent;
+    private TextToSpeech tts;
     SpeechRecognizer speechRecognizer;
     int cnt = 0;
 
-    private void createNotificationChannel() {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            String description = "Fishing";
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
-            NotificationChannel channel = new NotificationChannel("Log", description, importance);
-            channel.setDescription(description);NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
-        }
+//    private void createNotificationChannel() {
+//        // Create the NotificationChannel, but only on API 26+ because
+//        // the NotificationChannel class is new and not in the support library
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            String description = "Fishing";
+//            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+//            NotificationChannel channel = new NotificationChannel("Log", description, importance);
+//            channel.setDescription(description);NotificationManager notificationManager = getSystemService(NotificationManager.class);
+//            notificationManager.createNotificationChannel(channel);
+//        }
+//    }
+
+    private void speak(String text) {
+        tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status != TextToSpeech.ERROR){
+                    int result = tts.setLanguage(Locale.KOREA); // 언어 선택
+                    if(result == TextToSpeech.LANG_NOT_SUPPORTED || result == TextToSpeech.LANG_MISSING_DATA){
+                        Log.e("TTS", "This Language is not supported");
+                    }else{
+                        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+                    }
+                }else{
+                    Log.e("TTS", "Initialization Failed!");
+                }
+            }
+        });
     }
 
     private final RecognitionListener listener = new RecognitionListener() {
@@ -111,6 +132,8 @@ public class MainActivity extends Activity {
 
         @Override
         public void onResults(Bundle results) {
+
+
             ArrayList<String> matches =
                     results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 
@@ -123,7 +146,7 @@ public class MainActivity extends Activity {
             for(String obj : fishingTxt){
 
 
-                if (matches.toString().indexOf(obj) != -1){
+                if (textView.getText().toString().indexOf(obj) != -1){
 //                    Toast.makeText(MainActivity.this,"보이스피싱 경고",Toast.LENGTH_LONG).show();
                     cnt++;
                     break;
@@ -131,9 +154,13 @@ public class MainActivity extends Activity {
             }
 
             if(cnt>0){
+
+
                 Toast.makeText(MainActivity.this,"보이스피싱 경고, 총 의심 건수 : "+Integer.toString(cnt),Toast.LENGTH_LONG).show();
                 Vibrator vibrator = (Vibrator)getSystemService(VIBRATOR_SERVICE);
                 vibrator.vibrate(500); // 0.5초간 진동
+                speak("경고입니다.");
+
 
             }else{
                 Toast.makeText(MainActivity.this,"안심전화 입니다.",Toast.LENGTH_LONG).show();
@@ -157,6 +184,16 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+        tts = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if(status!=android.speech.tts.TextToSpeech.ERROR) {
+                    tts.setLanguage(Locale.KOREAN);
+                }
+            }
+        });
 
         ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.INTERNET,
                 Manifest.permission.RECORD_AUDIO},1);
